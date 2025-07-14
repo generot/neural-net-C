@@ -1,0 +1,48 @@
+@startuml nn-file-layout
+folder "Neural_Net" {
+    folder "docs" {
+        folder "structure" {
+            file "file_layout.puml"
+        }
+
+        folder "reqs" {
+            file "impl_reqs.yaml"
+            file "sys_reqs.yaml"
+        }
+    }
+
+    folder "lib" {
+        folder "mats" {
+            folder "mats.src" {
+                file "mats.c"
+            }
+
+            folder "mats.include" {
+                file "mats.h"
+            }
+
+            file "mats.CMakeLists.txt"
+        }
+
+        file "lib.CMakeLists.txt"
+    }
+
+    folder "src" {
+        file "main.c"
+        file "neural_net.c"
+        file "partial_d.c"
+        file "src.CMakeLists.txt"
+    }
+
+    folder "include" {
+        file "neural_net.h"
+        file "partial_d.h"
+    }
+}
+
+neural_net.c --> neural_net.h
+partial_d.c --> partial_d.h
+mats.c --> mats.h
+
+@enduml
+

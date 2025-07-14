@@ -1,0 +1,3 @@
+@startyaml sys-rs
+!include ../sys_reqs.yaml
+@endyaml

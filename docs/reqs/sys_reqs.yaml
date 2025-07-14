@@ -1,0 +1,96 @@
+Neural-net-C:
+  SysRs:
+    - project-def:
+        - id: 1
+          description: | 
+            This project is implements a neural network, consisting of multiple layers, each with a specific number of neurons. 
+            The project shall include the implementation of the forward pass, backward pass, and training process using backpropagation.
+    - neurons:
+        - id: 1
+          description: | 
+            Each neuron in the network shall be defined with its own set of weights and biases, 
+            which shall be updated during the training process.
+        - id: 2
+          description: | 
+            The neurons shall be organized into layers, with each layer containing a specific number of neurons.
+        - id: 3
+          description: | 
+            The neurons shall use activation functions to introduce non-linearity into the model, 
+            allowing it to learn complex patterns in the data.
+        - id: 4
+          description: |
+            The neurons, along with their weights and biases, shall be stored in a 
+            structured format that allows for efficient access and modification during training.
+    - layers:
+        - id: 1
+          description: | 
+            Each layer in the neural network shall be represented by a structured format (i.e. matrix) 
+            that allows for efficient computation of the forward and backward passes.
+        - id: 2
+          description: |
+            The neural network shall contain 2 + n layers, where n is the number of hidden layers, specified by the user
+            and the first and last layers are input and output layers, respectively.
+        - id: 3
+          description: |
+            The input layer shall be nothing more than a placeholder for the input data,
+            and the output layer shall produce the final predictions of the model.
+    - forward-pass:
+        - id: 1
+          description: | 
+            The forward pass shall compute the output of the neural network by passing the input data through each layer,
+            applying the activation functions to the neurons in each layer.
+        - id: 2
+          description: |
+            The forward pass shall be implemented in a way that allows for efficient computation, 
+            leveraging matrix operations where possible to speed up the calculations.
+        - id: 3
+          description: |
+            The output of the forward pass shall be stored in a structured format that allows for easy access during and after
+            cost function optimization and backpropagation.
+    - backpropagation:
+        - id: 1
+          description: | 
+            The backward pass shall compute the gradients of the cost function with respect to the weights and biases
+            of the neurons in the network, using the chain rule of calculus.
+        - id: 2
+          description: "The backward pass shall be performed in the steps, specified in this requirement."
+          steps:
+            - step: 1
+              description: | 
+                Compute the cost function as the squared sum of outputs from the forward pass, compared to the expected outputs,
+                defined in the training data.
+            - step: 2
+              description: | 
+                The algorithm shall start from the output layer.
+            - step: 3
+              description: | 
+                Compute the gradient of the cost function with respect to the weights and biases of the neurons in the current layer
+                and minimize the cost function using gradient descent.
+            - step: 4
+              description: | 
+                Go back one layer and repeat the process until all partial derivatives with respect to all weights and biases in the
+                network are calculated and the cost function is minimized with respect to all dimensions (parameters).
+    - matrix:
+      - id: 1
+        status: "informational"
+        satisfies:
+          - SysRs.neurons.4
+          - SysRs.layers.1
+        description: |
+          A matrix shall be used to implement a structured format for storing the neurons in each layer,
+          where each row represents a neuron and each column represents a weight or bias term.
+      - id: 2
+        description: |
+          The matrix functionality shall be implemented as a standalone module that works independently of the neural network implementation.
+      - id: 3
+        description: |
+          The matrix module shall support basic operations such as addition, subtraction, multiplication, and transposition
+          to facilitate the computations required for the forward and backward passes of the neural network.
+      - id: 4
+        description: |
+          The matrix module shall be designed to handle matrices of arbitrary size, allowing for flexibility in the number of neurons
+          and layers in the neural network.
+      - id: 5
+        status: "optional"
+        description: |
+          The matrix operations, defined by the module, could be optimized using GPU acceleration or other parallel processing techniques.

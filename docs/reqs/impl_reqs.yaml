@@ -1,0 +1,160 @@
+Neural-net-C:
+  ImplRs:
+    - neurons:
+      - id: 1
+        satisfies: 
+          - SysRs.neurons.1
+          - SysRs.neurons.2
+          - SysRs.neurons.4
+          - SysRs.layers.1
+        description: |
+          One layer of neurons in the neural network shall be represented by an s x (n + 1) matrix,
+          where s is the number of neurons in the layer and n is the number of inputs to each neuron.
+          The additional column in the matrix shall be used to store the bias term for each neuron.
+      - id: 2
+        satisfies: 
+          - SysRs.neurons.3
+        description: |
+          Each neuron in the layer shall use a Sigmoid activation function
+          to introduce non-linearity into the model, allowing it to learn complex patterns in the data.
+        notes:
+          - id: 1
+            description: "The Sigmoid activation function is defined as f(x) = 1 / (1 + exp(-x))."
+          - id: 2
+            description: "The derivative of the Sigmoid function is f'(x) = f(x) * (1 - f(x))."
+          - id: 3 
+            description: |
+              The Sigmoid function is chosen because it's differentiable for all real numbers,
+              which is necessary for the backpropagation algorithm to compute gradients.
+    - layers:
+      - id: 1
+        satisfies: 
+          - SysRs.layers.1
+        resolved-by:
+          - ImplRs.neurons.1
+        description: |
+          One layer of neurons in the neural network shall be represented by an s x (n + 1) matrix.
+      - id: 2
+        satisfies: 
+          - SysRs.layers.2
+          - SysRs.layers.3
+        description: |
+          An (n + 1) x 1 matrix shall be used to represent the input layer, 
+          where n is the number of inputs to each neuron in the first layer.
+          It should be initialized with the input data, and the last row shall be used to store the bias term.
+        notes:
+          - id: 1
+            description: |
+              The (n + 1) x 1 matrix shall have the following structure:
+                [x1, x2, ..., xn, 1]^T
+              where x1, x2, ..., xn are the input features and the last element is the bias term.
+      - id: 3
+        satisfies:
+          - SysRs.layers.2
+          - SysRs.layers.3
+          - SysRs.forward-pass.3
+        description: |
+          The output layer shall be represented by an (s x 1) matrix, 
+          where s is the number of outputs from the last layer of neurons.
+          It shall be initialized with the output data.
+        notes:
+          - id: 1
+            description: |
+              The (s x 1) matrix shall have the following structure
+                [y1, y2, ..., ys]^T
+              where y1, y2, ..., ys are the output values from the last layer of neurons.
+    - forward-pass:
+      - id: 1
+        satisfies: 
+          - SysRs.forward-pass.1
+          - SysRs.forward-pass.2
+        description: |
+          The (n + 1) x 1 input matrix shall be multiplied by the s x (n + 1) weight matrix of the first layer,
+          resulting in an (s x 1) matrix of outputs for the first layer. The activation function shall be applied 
+          to each element of the output matrix, producing the final output of the first layer. This same process
+          shall be repeated for each subsequent layer, using the output of the previous layer as the input for the next layer.
+        notes:
+          - id: 1
+            description: |
+              The multiplication of the input matrix and the layer weight matrix shall obey the rules of matrix multiplication,
+              where the number of columns in the input matrix must match the number of rows in the weight matrix.
+          - id: 2 
+            description: |
+              Input matrix to current layer: A: [(n + 1) x 1]
+              Weight matrix of current layer: W: [s x (n + 1)]
+              Output matrix of current layer: O: [s x 1]
+              The output matrix O is computed as O = W * A.
+      - id: 2
+        satisfies: 
+          - SysRs.forward-pass.3
+        resolved-by:
+          - ImplRs.layers.3
+        description: |
+          The output of the forward pass shall be stored in an (s x 1) matrix.
+    - backpropagation:
+      - id: 1
+        satisfies:
+          - SysRs.backpropagation.1
+          - SysRs.backpropagation.2
+        description: |
+          The backpropagation algorithm shall be implemented to compute the gradients of the cost function with respect
+          to the weights and biases in each layer of the network, begining from the output layer and moving backwards through the network.
+          The parameters of each layer shall be updated using gradient descent to minimize the cost function.
+        notes:
+          - id: 1
+            description: |
+              Three partial derivatives shall be computed during backpropagation:
+              - dJ/dA : The derivative of the cost function with respect to the output of the current layer.
+              - dA/dZ : The derivative of the activation of the neuron with respect to the weighted sum of inputs (Z).
+              - dZ/dW : The derivative of the weighted sum of inputs with respect to the weights (W).
+          - id: 2 
+            description: |
+              Each derivative dJ/dW[s, n] can then be computed by the chain rule:
+              dJ/dW[s, n] = dJ/dA[s] * dA[s]/dZ[s] * dZ[s]/dW[s, n] where:
+              - s is the index of the current neuron in the layer
+              - n is the index of the weight in the current neuron
+              - dJ/dA[s] is the derivative of the cost function with respect to the output of the current neuron
+              - dA[s]/dZ[s] is the derivative of the activation function with respect to the weighted sum of inputs for the current neuron
+              - dZ[s]/dW[s, n] is the derivative of the weighted sum of inputs with respect to the weight W[s, n]
+    - matrix:
+      - id: 1
+        satisfies:
+          - SysRs.matrix.2
+        description: |
+          A matrix module shall be implemented, with its own build system, defined by CMake, that can then be included by
+          the neural network module.
+      - id: 2
+        satisfies:
+          - SysRs.matrix.3
+        description: |
+          The matrix module shall implement the following operations:
+          - Matrix multiplication
+          - Matrix addition
+          - Matrix subtraction
+          - Matrix transposition
+          in the following way:
+          - A (m x n) * B (n x p) = C (m x p):
+            * C[i, j] = sum(A[i, k] * B[k, j]) for k in range(n)
+          - A (m x n) + B (m x n) = C (m x n):
+            * C[i, j] = A[i, j] + B[i, j]
+          - A (m x n) - B (m x n) = C (m x n):
+            * C = A + (-1) * B (Multiplying a matrix by a scalar is a basic operation that doesn't need requirements)
+          - A (m x n)^T = B(n x m):
+            * B[i, j] = A[j, i]
+      - id: 3
+        satisfies:
+          - SysRs.matrix.4
+        description: |
+          The matrix object shall use a type of dynamic memory allocation to allow for flexible resizing of matrices.
+      - id: 4
+        satisfies:
+          - SysRs.matrix.5
+        description: |
+          A GPU Hardware acceleration library, such as CUDA or OpenCL, shall be used to implement the matrix operations,
+          allowing for parallel processing of matrix operations.
+        notes:
+          - id: 1
+            description: |
+              This requirement is optional and can be implemented if the hardware supports it.
+              Any of the specified libraries could be used in the implementation. If a different library is used,
+              it should be documented in the notes of this requirement.
