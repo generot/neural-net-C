@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/neural_net.dir/src/main.c.o -o /home/shepot/gitdir/recreational/neural_net/bin/neural_net 

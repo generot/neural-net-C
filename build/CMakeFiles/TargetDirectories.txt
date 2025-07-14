@@ -1,3 +1,0 @@
-/home/shepot/gitdir/recreational/neural_net/build/CMakeFiles/neural_net.dir
-/home/shepot/gitdir/recreational/neural_net/build/CMakeFiles/edit_cache.dir
-/home/shepot/gitdir/recreational/neural_net/build/CMakeFiles/rebuild_cache.dir
