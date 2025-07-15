@@ -29,8 +29,8 @@ mats_matrix mats_copy_matrix(mats_matrix src) {
 
     copy.rows = src.rows;
     copy.cols = src.cols;
-    copy.memptr = malloc(sz * sizeof(mats_value));
     copy.is_valid = true;
+    copy.memptr = malloc(sz * sizeof(mats_value));
 
     if(NULL == copy.memptr) {
         return (mats_matrix){0};

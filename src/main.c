@@ -42,5 +42,11 @@ int main(void) {
     printf("E = \n");
     mats_print_matrix(E);
 
+    mats_free_matrix(&A);
+    mats_free_matrix(&B);
+    mats_free_matrix(&C);
+    mats_free_matrix(&D);
+    mats_free_matrix(&E);
+
     return 0;
 }
