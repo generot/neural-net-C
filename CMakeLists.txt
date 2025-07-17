@@ -18,6 +18,6 @@ add_executable(neural_net ${SOURCES})
 add_subdirectory("./lib")
 
 target_include_directories(neural_net PRIVATE ${INC_DIR})
-target_link_libraries(neural_net PRIVATE mats)
+target_link_libraries(neural_net PRIVATE mats m)
 
-target_compile_options(neural_net PUBLIC -Wall -Wextra -Werror -Wpedantic -g)
+target_compile_options(neural_net PUBLIC -Wall -Wextra -Werror -Wpedantic -g -std=c17)

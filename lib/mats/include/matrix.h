@@ -8,38 +8,41 @@
 #include <assert.h>
 #include <stdbool.h>
 
-typedef struct mats_matrix mats_matrix;
-typedef double mats_value;
-typedef uint32_t mats_size;
+typedef struct mt_matrix mt_matrix;
+typedef double mt_value;
+typedef uint64_t mt_size;
+typedef mt_value (*mt_lambda)(mt_value);
 
-struct mats_matrix {
+struct mt_matrix {
     bool is_valid;
 
-    mats_value *memptr;
+    mt_value *memptr;
 
-    mats_size cols;
-    mats_size rows;
+    mt_size cols;
+    mt_size rows;
 };
 
-int mats_allocate_matrix(mats_matrix *out, mats_size rows, mats_size cols);
-void mats_free_matrix(mats_matrix *src);
-void mats_print_matrix(mats_matrix src);
+int mt_allocate_matrix(mt_matrix *out, mt_size rows, mt_size cols);
+void mt_free_matrix(mt_matrix *src);
+void mt_print_matrix(mt_matrix src);
 //Matrix must be allocated before calling this function.
-void mats_init_from_arr(mats_matrix *src, mats_value *arr);
-void mats_set_val(mats_matrix *src, mats_size row, mats_size col, mats_value val);
-mats_value mats_get_val(mats_matrix *src, mats_size row, mats_size col);
-mats_matrix mats_copy_matrix(mats_matrix src);
+void mt_init_from_arr(mt_matrix *src, mt_value *arr);
+void mt_set_val(mt_matrix *src, mt_size row, mt_size col, mt_value val);
+mt_value mt_get_val(mt_matrix *src, mt_size row, mt_size col);
+mt_matrix mt_copy_matrix(mt_matrix *src);
+mt_matrix mt_transpose(mt_matrix *src);
+mt_matrix mt_apply_lambda(mt_matrix *src, mt_lambda lmb);
 
 //NON-ACCELERATED FUNCTIONS
-mats_matrix mats_add(mats_matrix *A, mats_matrix *B);
-mats_matrix mats_mult(mats_matrix *A, mats_matrix *B);
-mats_matrix mats_scale(mats_matrix *A, mats_value scalar);
+mt_matrix mt_add(mt_matrix *A, mt_matrix *B);
+mt_matrix mt_mult(mt_matrix *A, mt_matrix *B);
+mt_matrix mt_scale(mt_matrix *A, mt_value scalar);
 //NON-ACCELERATED FUNCTIONS
 
 //(TO-BE-)GPU-ACCELERATED FUNCTIONS
-mats_matrix mats_add_GPU(mats_matrix A, mats_matrix B);
-mats_matrix mats_mult_GPU(mats_matrix A, mats_matrix B);
-mats_matrix mats_scale_GPU(mats_matrix A, mats_value scalar);
+mt_matrix mt_add_GPU(mt_matrix A, mt_matrix B);
+mt_matrix mt_mult_GPU(mt_matrix A, mt_matrix B);
+mt_matrix mt_scale_GPU(mt_matrix A, mt_value scalar);
 //(TO-BE-)GPU-ACCELERATED FUNCTIONS
 
 #endif // __MATRIX_H__

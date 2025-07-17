@@ -1,7 +1,7 @@
 #include "matrix.h"
 
-int mats_allocate_matrix(mats_matrix *mat, mats_size rows, mats_size cols) {
-    mat->memptr = calloc(rows * cols, sizeof(mats_value));
+int mt_allocate_matrix(mt_matrix *mat, mt_size rows, mt_size cols) {
+    mat->memptr = calloc(rows * cols, sizeof(mt_value));
     mat->cols = cols;
     mat->rows = rows;
     mat->is_valid = true;
@@ -9,58 +9,58 @@ int mats_allocate_matrix(mats_matrix *mat, mats_size rows, mats_size cols) {
     return 0;
 }
 
-void mats_free_matrix(mats_matrix *src) {
+void mt_free_matrix(mt_matrix *src) {
     if(!src->is_valid) {
         return;
     }
 
     free(src->memptr);
 
-    *src = (mats_matrix){0};
+    *src = (mt_matrix){0};
 }
 
-mats_matrix mats_copy_matrix(mats_matrix src) {
-    if(!src.is_valid) {
-        return (mats_matrix){0};
+mt_matrix mt_copy_matrix(mt_matrix *src) {
+    if(!src->is_valid) {
+        return (mt_matrix){0};
     }
 
-    mats_matrix copy = {0};
-    mats_size sz = src.rows * src.cols;
+    mt_matrix copy = {0};
+    mt_size sz = src->rows * src->cols;
 
-    copy.rows = src.rows;
-    copy.cols = src.cols;
+    copy.rows = src->rows;
+    copy.cols = src->cols;
     copy.is_valid = true;
-    copy.memptr = malloc(sz * sizeof(mats_value));
+    copy.memptr = malloc(sz * sizeof(mt_value));
 
     if(NULL == copy.memptr) {
-        return (mats_matrix){0};
+        return (mt_matrix){0};
     }
 
-    if(NULL == memcpy(copy.memptr, src.memptr, sz * sizeof(mats_value))) {
-        return (mats_matrix){0};
+    if(NULL == memcpy(copy.memptr, src->memptr, sz * sizeof(mt_value))) {
+        return (mt_matrix){0};
     }
 
     return copy;
 }
 
-void mats_init_from_arr(mats_matrix *src, mats_value *arr) {
-    for(mats_size row = 0; row < src->rows; row++) {
-        for(mats_size col = 0; col < src->cols; col++) {
-            mats_set_val(src, row, col, arr[col + row * src->cols]);
+void mt_init_from_arr(mt_matrix *src, mt_value *arr) {
+    for(mt_size row = 0; row < src->rows; row++) {
+        for(mt_size col = 0; col < src->cols; col++) {
+            mt_set_val(src, row, col, arr[col + row * src->cols]);
         }
     }
 }
 
-void mats_print_matrix(mats_matrix src) {
+void mt_print_matrix(mt_matrix src) {
     if(!src.is_valid) {
         return;
     }
 
-    for(mats_size row = 0; row < src.rows; row++) {
+    for(mt_size row = 0; row < src.rows; row++) {
         printf("[");
 
-        for(mats_size col = 0; col < src.cols; col++) {
-            printf("%.3lf ", mats_get_val(&src, row, col));
+        for(mt_size col = 0; col < src.cols; col++) {
+            printf("%.3lf ", mt_get_val(&src, row, col));
         }
 
         printf("]\n");
@@ -69,7 +69,7 @@ void mats_print_matrix(mats_matrix src) {
 
 //These functions will be much more frequently called than the others, so a pass-by-reference seems to be the
 //logically more optimal option for the matrix struct.
-mats_value mats_get_val(mats_matrix *src, mats_size row, mats_size col) {
+mt_value mt_get_val(mt_matrix *src, mt_size row, mt_size col) {
     if(!src->is_valid) {
         return ~0;
     }
@@ -85,7 +85,7 @@ mats_value mats_get_val(mats_matrix *src, mats_size row, mats_size col) {
     return src->memptr[col + row * src->cols];
 }
 
-void mats_set_val(mats_matrix *src, mats_size row, mats_size col, mats_value val) {
+void mt_set_val(mt_matrix *src, mt_size row, mt_size col, mt_value val) {
     if(!src->is_valid) {
         return;
     }
@@ -104,80 +104,121 @@ void mats_set_val(mats_matrix *src, mats_size row, mats_size col, mats_value val
     src->memptr[col + row * src->cols] = val;
 }
 
-//NON-ACCELERATED FUNCTIONS
-mats_matrix mats_add(mats_matrix *A, mats_matrix *B) {
-    if(!A->is_valid && !B->is_valid) {
-        return (mats_matrix){0};
+mt_matrix mt_transpose(mt_matrix *src) {
+    if(!src->is_valid) {
+        return (mt_matrix){0};
     }
 
-    if(A->cols != B->cols || A->rows != B->rows) {
-        return (mats_matrix){0};
+    mt_matrix new_mat = {0};
+
+    if(mt_allocate_matrix(&new_mat, src->cols, src->rows) != 0) {
+        return (mt_matrix){0};
     }
 
-    mats_matrix new_mat = {0};
+    for(mt_size row = 0; row < new_mat.rows; row++) {
+        for(mt_size col = 0; col < new_mat.cols; col++) {
+            mt_value cross_val = mt_get_val(src, col, row);
 
-    if(-1 == mats_allocate_matrix(&new_mat, A->rows, A->cols)) {
-        return (mats_matrix){0};
-    }
-
-    for(mats_size row = 0; row < A->rows; row++) {
-        for(mats_size col = 0; col < A->cols; col++) { 
-            mats_value sum = mats_get_val(A, row, col) + mats_get_val(B, row, col);
-            mats_set_val(&new_mat, row, col, sum);
+            mt_set_val(&new_mat, row, col, cross_val);
         }
     }
 
     return new_mat;
 }
 
-mats_matrix mats_mult(mats_matrix *A, mats_matrix *B) {
+mt_matrix mt_apply_lambda(mt_matrix *src, mt_lambda lmb) {
+    if(!src->is_valid) {
+        return (mt_matrix){0};
+    }
+
+    mt_matrix new_mat = mt_copy_matrix(src);
+
+    for(mt_size row = 0; row < new_mat.rows; row++) {
+        for(mt_size col = 0; col < new_mat.cols; col++) {
+            mt_value val = mt_get_val(&new_mat, row, col);
+            mt_value f_val = lmb(val);
+
+            mt_set_val(&new_mat, row, col, f_val);
+        }
+    }
+
+    return new_mat;
+}
+
+//NON-ACCELERATED FUNCTIONS
+mt_matrix mt_add(mt_matrix *A, mt_matrix *B) {
     if(!A->is_valid && !B->is_valid) {
-        return (mats_matrix){0};
+        return (mt_matrix){0};
+    }
+
+    if(A->cols != B->cols || A->rows != B->rows) {
+        return (mt_matrix){0};
+    }
+
+    mt_matrix new_mat = {0};
+
+    if(-1 == mt_allocate_matrix(&new_mat, A->rows, A->cols)) {
+        return (mt_matrix){0};
+    }
+
+    for(mt_size row = 0; row < A->rows; row++) {
+        for(mt_size col = 0; col < A->cols; col++) { 
+            mt_value sum = mt_get_val(A, row, col) + mt_get_val(B, row, col);
+            mt_set_val(&new_mat, row, col, sum);
+        }
+    }
+
+    return new_mat;
+}
+
+mt_matrix mt_mult(mt_matrix *A, mt_matrix *B) {
+    if(!A->is_valid && !B->is_valid) {
+        return (mt_matrix){0};
     }
 
     if(A->cols != B->rows) {
-        return (mats_matrix){0};
+        return (mt_matrix){0};
     }
 
-    mats_matrix new_mat = {0};
+    mt_matrix new_mat = {0};
 
-    if(-1 == mats_allocate_matrix(&new_mat, A->rows, B->cols)) {
-        return (mats_matrix){0};
+    if(-1 == mt_allocate_matrix(&new_mat, A->rows, B->cols)) {
+        return (mt_matrix){0};
     }
 
-    for(mats_size row = 0; row < A->rows; row++) {
-        for(mats_size col = 0; col < B->cols; col++) {
-            mats_value sum = 0;
+    for(mt_size row = 0; row < A->rows; row++) {
+        for(mt_size col = 0; col < B->cols; col++) {
+            mt_value sum = 0;
 
-            for(mats_size row_b = 0; row_b < B->rows; row_b++) {
-                mats_value prod = mats_get_val(A, row, row_b) * mats_get_val(B, row_b, col);
+            for(mt_size row_b = 0; row_b < B->rows; row_b++) {
+                mt_value prod = mt_get_val(A, row, row_b) * mt_get_val(B, row_b, col);
                 
                 sum += prod;
             }
 
-            mats_set_val(&new_mat, row, col, sum);
+            mt_set_val(&new_mat, row, col, sum);
         }
     }
 
     return new_mat;
 }
 
-mats_matrix mats_scale(mats_matrix *A, mats_value scalar) {
+mt_matrix mt_scale(mt_matrix *A, mt_value scalar) {
     if(!A->is_valid) {
-        return (mats_matrix){0};
+        return (mt_matrix){0};
     }
 
-    mats_matrix new_mat = mats_copy_matrix(*A);
+    mt_matrix new_mat = mt_copy_matrix(A);
 
     if(!new_mat.is_valid) {
-        return (mats_matrix){0};
+        return (mt_matrix){0};
     }
 
-    for(mats_size row = 0; row < new_mat.rows; row++) {
-        for(mats_size col = 0; col < new_mat.cols; col++) {
-            mats_value scaled_val = scalar * mats_get_val(&new_mat, row, col);
+    for(mt_size row = 0; row < new_mat.rows; row++) {
+        for(mt_size col = 0; col < new_mat.cols; col++) {
+            mt_value scaled_val = scalar * mt_get_val(&new_mat, row, col);
 
-            mats_set_val(&new_mat, row, col, scaled_val);
+            mt_set_val(&new_mat, row, col, scaled_val);
         }
     }
 
@@ -186,21 +227,21 @@ mats_matrix mats_scale(mats_matrix *A, mats_value scalar) {
 //NON-ACCELERATED FUNCTIONS
 
 //(TO-BE-)GPU-ACCELERATED FUNCTIONS
-mats_matrix mats_add_GPU(mats_matrix A, mats_matrix B) {
+mt_matrix mt_add_GPU(mt_matrix A, mt_matrix B) {
     (void)A;
     (void)B;
 
     assert(0 && "Unimplemented.");
 }
 
-mats_matrix mats_mult_GPU(mats_matrix A, mats_matrix B) {
+mt_matrix mt_mult_GPU(mt_matrix A, mt_matrix B) {
     (void)A;
     (void)B;
     
     assert(0 && "Unimplemented.");
 }
 
-mats_matrix mats_scale_GPU(mats_matrix A, mats_value scalar) {
+mt_matrix mt_scale_GPU(mt_matrix A, mt_value scalar) {
     (void)A;
     (void)scalar;
     
